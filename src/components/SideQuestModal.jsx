@@ -159,7 +159,7 @@ export default function SideQuestModal({
         </div>
 
         {step === 'loading' && <LoadingState label={`Loading ${activeList?.name || 'your collection'}`} />}
-        {step === 'routing' && <LoadingState label="Drawing one curated route" />}
+        {step === 'routing' && <LoadingState label="Finding the shortest route through your anchors" />}
 
         {step === 'empty' && (
           <div className="empty-state compact">

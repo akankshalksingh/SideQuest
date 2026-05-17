@@ -88,7 +88,7 @@ export async function getRouteWithWaypoints(origin, destination, waypoints, mode
       location: { lat: favorite.lat, lng: favorite.lng },
       stopover: false,
     })),
-    optimizeWaypoints: false,
+    optimizeWaypoints: true,
     travelMode: resolveTravelMode(mode),
   });
 }
