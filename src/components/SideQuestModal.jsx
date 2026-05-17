@@ -1,4 +1,4 @@
-import { Check, Loader2, Route, X } from 'lucide-react';
+import { Bike, Car, Check, Footprints, Loader2, Route, X } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import CategoryIcon from './CategoryIcon.jsx';
 import { CATEGORIES } from '../utils/favorites.js';
@@ -8,7 +8,14 @@ import {
   getDirectRoute,
   getRouteWithWaypoints,
   summarizeRoute,
+  TRAVEL_MODES,
 } from '../utils/routes.js';
+
+const MODE_ICONS = {
+  driving: Car,
+  walking: Footprints,
+  bicycling: Bike,
+};
 
 export default function SideQuestModal({
   origin,
@@ -25,6 +32,7 @@ export default function SideQuestModal({
   const [listId, setListId] = useState(lists[0]?.id || '');
   const [routeInfo, setRouteInfo] = useState(null);
   const [directInfo, setDirectInfo] = useState(null);
+  const [travelMode, setTravelMode] = useState('driving');
   const [errorMsg, setErrorMsg] = useState('');
 
   const activeList = lists.find((list) => list.id === listId) || lists[0];
@@ -43,7 +51,7 @@ export default function SideQuestModal({
 
     async function loadRouteList() {
       try {
-        const directRoute = await getDirectRoute(origin, destination);
+        const directRoute = await getDirectRoute(origin, destination, travelMode);
         if (cancelled) return;
 
         setDirectInfo({
@@ -66,7 +74,7 @@ export default function SideQuestModal({
     return () => {
       cancelled = true;
     };
-  }, [origin, destination, listPlaces]);
+  }, [origin, destination, listPlaces, travelMode]);
 
   function toggleFavorite(id) {
     setSelected((current) => {
@@ -87,7 +95,7 @@ export default function SideQuestModal({
     setErrorMsg('');
 
     try {
-      const result = await getRouteWithWaypoints(origin, destination, selectedAnchors);
+      const result = await getRouteWithWaypoints(origin, destination, selectedAnchors, travelMode);
       directionsRenderer.setDirections(result);
       const summary = summarizeRoute(result);
       setRouteInfo({ ...summary, anchors: selectedAnchors.length });
@@ -127,6 +135,27 @@ export default function SideQuestModal({
               {list.name}
             </button>
           ))}
+        </div>
+
+        <div className="mode-picker" aria-label="Travel mode">
+          {Object.entries(TRAVEL_MODES).map(([key, item]) => {
+            const Icon = MODE_ICONS[key];
+            return (
+              <button
+                key={key}
+                type="button"
+                className={travelMode === key ? 'mode-choice active' : 'mode-choice'}
+                onClick={() => {
+                  if (travelMode === key) return;
+                  setTravelMode(key);
+                  setStep('loading');
+                }}
+              >
+                <Icon size={17} aria-hidden="true" />
+                <span>{item.label}</span>
+              </button>
+            );
+          })}
         </div>
 
         {step === 'loading' && <LoadingState label={`Loading ${activeList?.name || 'your collection'}`} />}
@@ -205,7 +234,7 @@ export default function SideQuestModal({
             <div className="stats-grid">
               <span>
                 <strong>{routeInfo.duration}</strong>
-                <small>Drive time</small>
+                <small>{TRAVEL_MODES[travelMode].label} time</small>
               </span>
               <span>
                 <strong>{routeInfo.distance}</strong>

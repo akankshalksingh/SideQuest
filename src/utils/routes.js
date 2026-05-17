@@ -1,6 +1,12 @@
 const METERS_PER_MILE = 1609.344;
 const MAX_WAYPOINTS = 25;
 
+export const TRAVEL_MODES = {
+  driving: { label: 'Drive', googleMode: 'DRIVING', mapsMode: 'driving' },
+  walking: { label: 'Walk', googleMode: 'WALKING', mapsMode: 'walking' },
+  bicycling: { label: 'Bike', googleMode: 'BICYCLING', mapsMode: 'bicycling' },
+};
+
 function routeStatusMessage(status) {
   const messages = {
     ZERO_RESULTS: 'No driving route was found for that destination.',
@@ -45,11 +51,16 @@ export function isNearPath(latLng, path, maxMeters = 3000) {
   });
 }
 
-export async function getDirectRoute(origin, destination) {
+function resolveTravelMode(mode = 'driving') {
+  const travelMode = TRAVEL_MODES[mode] || TRAVEL_MODES.driving;
+  return window.google.maps.TravelMode[travelMode.googleMode];
+}
+
+export async function getDirectRoute(origin, destination, mode = 'driving') {
   const result = await directionsRoute({
     origin,
     destination,
-    travelMode: window.google.maps.TravelMode.DRIVING,
+    travelMode: resolveTravelMode(mode),
   });
 
   const route = result.routes?.[0];
@@ -65,7 +76,7 @@ export async function getDirectRoute(origin, destination) {
   };
 }
 
-export async function getRouteWithWaypoints(origin, destination, waypoints) {
+export async function getRouteWithWaypoints(origin, destination, waypoints, mode = 'driving') {
   if (waypoints.length > MAX_WAYPOINTS) {
     throw new Error(`Choose ${MAX_WAYPOINTS} route anchors or fewer for one route.`);
   }
@@ -78,12 +89,12 @@ export async function getRouteWithWaypoints(origin, destination, waypoints) {
       stopover: false,
     })),
     optimizeWaypoints: false,
-    travelMode: window.google.maps.TravelMode.DRIVING,
+    travelMode: resolveTravelMode(mode),
   });
 }
 
-export async function filterFavoritesNearRoute(origin, destination, favorites, radiusMeters = 4000) {
-  const directRoute = await getDirectRoute(origin, destination);
+export async function filterFavoritesNearRoute(origin, destination, favorites, radiusMeters = 4000, mode = 'driving') {
+  const directRoute = await getDirectRoute(origin, destination, mode);
   const nearbyFavorites = favorites.filter((favorite) =>
     isNearPath({ lat: favorite.lat, lng: favorite.lng }, directRoute.path, radiusMeters),
   );
@@ -120,12 +131,13 @@ export function formatDistance(meters) {
   return `${(meters / METERS_PER_MILE).toFixed(1)} mi`;
 }
 
-export function buildGoogleMapsUrl(origin, destination, routeAnchors) {
+export function buildGoogleMapsUrl(origin, destination, routeAnchors, mode = 'driving') {
+  const travelMode = TRAVEL_MODES[mode] || TRAVEL_MODES.driving;
   const params = new URLSearchParams({
     api: '1',
     origin: `${origin.lat},${origin.lng}`,
     destination: `${destination.lat},${destination.lng}`,
-    travelmode: 'driving',
+    travelmode: travelMode.mapsMode,
   });
 
   if (routeAnchors.length) {
