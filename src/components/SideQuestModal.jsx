@@ -11,7 +11,7 @@ import {
   summarizeRoute,
 } from '../utils/routes.js';
 
-export default function DetourModal({
+export default function SideQuestModal({
   origin,
   destination,
   favorites,
@@ -93,7 +93,7 @@ export default function DetourModal({
 
   return (
     <div className="modal-backdrop" onClick={(event) => event.target === event.currentTarget && onClose()}>
-      <section className="sheet" role="dialog" aria-modal="true" aria-label="Build a detour route">
+      <section className="sheet" role="dialog" aria-modal="true" aria-label="Build a SideQuest route">
         <div className="sheet-header">
           <div>
             <p className="eyebrow">To {destination.name}</p>
@@ -132,7 +132,7 @@ export default function DetourModal({
               </div>
             )}
 
-            <ul className="detour-list">
+            <ul className="sidequest-list">
               {nearbyFavs.map((favorite) => {
                 const category = CATEGORIES[favorite.category] || CATEGORIES.other;
                 const active = selected.has(favorite.id);
@@ -141,7 +141,7 @@ export default function DetourModal({
                   <li key={favorite.id}>
                     <button
                       type="button"
-                      className={active ? 'detour-option active' : 'detour-option'}
+                      className={active ? 'sidequest-option active' : 'sidequest-option'}
                       onClick={() => toggleFavorite(favorite.id)}
                     >
                       <span className="category-dot" style={{ '--dot-color': category.color }}>

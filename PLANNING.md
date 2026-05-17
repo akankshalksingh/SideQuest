@@ -1,6 +1,6 @@
-# Detour App — Codex Planning Document
+# SideQuest App — Codex Planning Document
 
-> **Purpose**: This document is the single source of truth for building, extending, and debugging the Detour web app. It covers architecture, data models, component contracts, API behavior, edge cases, and future roadmap. Read this before touching any code.
+> **Purpose**: This document is the single source of truth for building, extending, and debugging the SideQuest web app. It covers architecture, data models, component contracts, API behavior, edge cases, and future roadmap. Read this before touching any code.
 
 ---
 
@@ -26,12 +26,12 @@
 
 ## 1. Product Overview
 
-**Detour** is a web-based route planning app. The core insight: Google Maps lets you add waypoints manually, but it has no concept of "saved favorites" that auto-populate a route.
+**SideQuest** is a web-based route planning app. The core insight: Google Maps lets you add waypoints manually, but it has no concept of "saved favorites" that auto-populate a route.
 
 **The core flow:**
 1. User saves places they love (coffee shops, gas stations, restaurants) as **Favorites**
 2. User sets a **Destination**
-3. User hits **↗ Detour**
+3. User hits **↗ SideQuest**
 4. App finds which favorites are geographically close to the direct route
 5. User picks which stops to include
 6. App builds an **optimized route** through the selected stops to the destination
@@ -68,7 +68,7 @@
 ## 3. Project Structure
 
 ```
-detour-app/
+SideQuest/
 ├── index.html                    # Entry point; loads Google Fonts, mounts #root
 ├── vite.config.js                # Vite + React plugin, no special config needed
 ├── package.json                  # React 18, ReactDOM, @vitejs/plugin-react
@@ -88,7 +88,7 @@ detour-app/
     │   └── routes.js             # Directions API calls + geometry helpers
     ├── components/
     │   ├── Header.jsx            # Top nav bar with logo + tab switcher
-    │   ├── DetourModal.jsx       # Bottom sheet: find nearby favs → build route
+    │   ├── SideQuestModal.jsx       # Bottom sheet: find nearby favs → build route
     │   ├── AddFavoriteModal.jsx  # Bottom sheet: search place + pick category → save
     │   └── FavoritesPanel.jsx    # Favorites tab: list, category icons, remove
     └── pages/
@@ -122,7 +122,7 @@ detour-app/
 }
 ```
 
-**Storage:** Array of Favorite objects at `localStorage['detour_favorites']`. Serialized as JSON.
+**Storage:** Array of Favorite objects at `localStorage['sidequest_favorites']`. Serialized as JSON.
 
 **Ordering:** Newest first (prepended on add, not appended).
 
@@ -169,7 +169,7 @@ When adding a new category: add to this object AND add a corresponding CSS varia
 |---|---|---|
 | `userLocation` | `{lat, lng} \| null` | Set once on geolocation success |
 | `destination` | `{name, lat, lng} \| null` | Set by autocomplete selection |
-| `showDetour` | `boolean` | Controls DetourModal visibility |
+| `showSideQuest` | `boolean` | Controls SideQuestModal visibility |
 | `showAddFav` | `boolean` | Controls AddFavoriteModal visibility |
 | `routeActive` | `boolean` | True after a route has been drawn |
 | `locationError` | `boolean` | True if geolocation was denied |
@@ -180,7 +180,7 @@ When adding a new category: add to this object AND add a corresponding CSS varia
 
 ### Modal-local state
 
-**DetourModal:**
+**SideQuestModal:**
 - `step`: `'loading' | 'pick' | 'routing' | 'done' | 'empty' | 'error'`
 - `nearbyFavs`: filtered favorites near the route
 - `selected`: `Set<string>` of favorite IDs the user chose
@@ -216,7 +216,7 @@ When adding a new category: add to this object AND add a corresponding CSS varia
 
 **Props:** `activeTab: string`, `setActiveTab: fn`
 
-**Renders:** Logo (↗ detour) + two tab buttons (Map, Favorites).
+**Renders:** Logo (↗ SideQuest) + two tab buttons (Map, Favorites).
 
 **No state.** Pure presentational.
 
@@ -235,7 +235,7 @@ When adding a new category: add to this object AND add a corresponding CSS varia
 4. Create `DirectionsRenderer` and store in `rendererRef`
 5. Attach Places Autocomplete to destination input
 6. Re-render favorite markers whenever `favorites` changes
-7. Show/hide DetourModal and AddFavoriteModal
+7. Show/hide SideQuestModal and AddFavoriteModal
 
 **Map initialization guard:** The `useEffect` checks `!window.google?.maps || mapInstance.current` before running. This prevents double-init if the component re-renders before Maps loads (shouldn't happen since App waits, but safety net).
 
@@ -245,7 +245,7 @@ When adding a new category: add to this object AND add a corresponding CSS varia
 
 ---
 
-### `DetourModal.jsx`
+### `SideQuestModal.jsx`
 
 **Props:**
 - `origin: {lat, lng}` — user's current location
@@ -310,7 +310,7 @@ mount → 'loading'
 ### `utils/favorites.js`
 
 #### `loadFavorites() → Favorite[]`
-Reads `localStorage['detour_favorites']`. Wraps in try/catch — returns `[]` if parse fails (corrupt data). Called once in `App.jsx` as the lazy initializer for `useState`.
+Reads `localStorage['sidequest_favorites']`. Wraps in try/catch — returns `[]` if parse fails (corrupt data). Called once in `App.jsx` as the lazy initializer for `useState`.
 
 #### `saveFavorites(favorites: Favorite[]) → void`
 Writes the full array to localStorage. Called by both `addFavorite` and `removeFavorite`. No error handling — if localStorage is full or disabled, this silently fails. Future: add quota error handling.
@@ -357,7 +357,7 @@ Calls `DirectionsService.route()` with `optimizeWaypoints: true`. Returns the fu
 #### `filterFavoritesNearRoute(origin, destination, favorites, radiusMeters) → Promise<Favorite[]>`
 Calls `getDirectRoute`, then filters each favorite through `isNearPath`. Returns only the favorites that are within `radiusMeters` of the direct path.
 
-**Default radius in DetourModal call:** 4000 meters (passed explicitly). Slightly more generous than `isNearPath`'s default to account for route deviations.
+**Default radius in SideQuestModal call:** 4000 meters (passed explicitly). Slightly more generous than `isNearPath`'s default to account for route deviations.
 
 #### `formatDuration(seconds) → string`
 - 0–3599s → `"N min"`
@@ -436,18 +436,18 @@ Load app
 → Favorite saved to localStorage
 → Modal closes
 → Teal marker appears on map
-→ Hint changes to "Set a destination to enable Detour"
+→ Hint changes to "Set a destination to enable SideQuest"
 ```
 
-### Flow 2: Build a detour route
+### Flow 2: Build a SideQuest route
 
 ```
 User has favorites saved
 → User types destination in search bar
 → Selects from autocomplete → destination state set
-→ "↗ Detour" button activates (accent color)
-→ User clicks Detour
-→ DetourModal opens, step = 'loading'
+→ "↗ SideQuest" button activates (accent color)
+→ User clicks SideQuest
+→ SideQuestModal opens, step = 'loading'
 → getDirectRoute() called → baseline path computed
 → Each favorite checked against path (4km radius)
 → Nearby favorites shown in 'pick' step
@@ -463,7 +463,7 @@ User has favorites saved
 ### Flow 3: No favorites near route
 
 ```
-→ DetourModal opens, step = 'loading'
+→ SideQuestModal opens, step = 'loading'
 → filterFavoritesNearRoute() returns []
 → step = 'empty'
 → User sees "No saved favorites near this route"
@@ -478,7 +478,7 @@ User has favorites saved
 → locationError = true
 → Red banner shown: "Location access denied"
 → userLocation stays null
-→ "↗ Detour" button stays disabled (requires userLocation)
+→ "↗ SideQuest" button stays disabled (requires userLocation)
 → User can still browse map (map falls back to default center — San Francisco, lat:37.7749, lng:-122.4194)
 ```
 
@@ -494,7 +494,7 @@ User has favorites saved
 → destination state = null
 → Input field cleared
 → routeActive = false
-→ Detour button grays out
+→ SideQuest button grays out
 ```
 
 ---
@@ -517,7 +517,7 @@ User has favorites saved
 |---|---|
 | `VITE_GOOGLE_MAPS_API_KEY` missing | `useGoogleMaps` sets error immediately, error screen shown |
 | Key is invalid | Script loads but `window.google.maps` throws on use; `onerror` may or may not fire | Should show "Check your API key" error |
-| API not enabled in Cloud Console | `REQUEST_DENIED` status from Directions API | Caught by route functions, shown in DetourModal error step |
+| API not enabled in Cloud Console | `REQUEST_DENIED` status from Directions API | Caught by route functions, shown in SideQuestModal error step |
 | Daily quota exceeded | `OVER_DAILY_LIMIT` | Caught, surfaced as generic error |
 | Script load times out | No timeout currently | Add 15s timeout: if `window.google.maps` still not set, set error |
 
@@ -571,7 +571,7 @@ User has favorites saved
 |---|---|
 | User goes offline after map loads | Map tiles may fail to load (cached tiles still show) | Not handled — acceptable for MVP |
 | User goes offline before Maps SDK loads | `onerror` fires, error screen shown | ✅ Handled |
-| User goes offline during Detour flow | Directions API call fails | Caught, error step shown in modal |
+| User goes offline during SideQuest flow | Directions API call fails | Caught, error step shown in modal |
 
 ---
 
@@ -608,13 +608,13 @@ Vercel automatically makes these available during the build step. Since Vite bak
 ### Initial GitHub Setup
 
 ```bash
-cd detour-app
+cd SideQuest
 git init
 git add .
-git commit -m "feat: initial Detour app"
+git commit -m "feat: initial SideQuest app"
 
 # Create repo on github.com first, then:
-git remote add origin https://github.com/USERNAME/detour-app.git
+git remote add origin https://github.com/USERNAME/SideQuest.git
 git branch -M main
 git push -u origin main
 ```
@@ -622,7 +622,7 @@ git push -u origin main
 ### Vercel Setup
 
 1. Go to [vercel.com](https://vercel.com) → Sign up with GitHub
-2. **Add New Project** → Import `detour-app` from GitHub
+2. **Add New Project** → Import `SideQuest` from GitHub
 3. Framework: Vite (auto-detected)
 4. Build command: `npm run build` (default)
 5. Output directory: `dist` (default)
@@ -656,7 +656,7 @@ After deploy, add your Vercel URL to Google Cloud Console:
 
 ### Google Maps API
 
-- **Directions API costs money at scale.** Free tier: $200/month credit. Each Directions request = ~$0.005. At 1000 detour builds/month = $5. Well within free tier for personal use.
+- **Directions API costs money at scale.** Free tier: $200/month credit. Each Directions request = ~$0.005. At 1000 SideQuest builds/month = $5. Well within free tier for personal use.
 - **Waypoint optimization is billed at higher rate** (Routes Pro SKU). With DirectionsService + `optimizeWaypoints: true`, this applies. Monitor usage.
 - **Autocomplete session billing.** Places Autocomplete charges per session. Each time a user opens the add-favorite modal and types = 1 session. Free tier covers ~28,000 sessions/month.
 - **25 waypoint maximum** per Directions request. Enforced by Google. Our app never approaches this with personal favorites.
@@ -689,8 +689,8 @@ Listed in rough priority order.
 ### P1 — Core Improvements
 
 - [ ] **Duplicate detection**: Before saving a favorite, check if `placeId` already exists in the array. Show "Already saved" instead of saving duplicate.
-- [ ] **Detour radius control**: Add a slider in DetourModal (1km – 10km) so user can adjust how far off-route they're willing to go.
-- [ ] **Route comparison**: Show the direct route duration alongside the detour duration so user understands the time cost.
+- [ ] **SideQuest radius control**: Add a slider in SideQuestModal (1km – 10km) so user can adjust how far off-route they're willing to go.
+- [ ] **Route comparison**: Show the direct route duration alongside the SideQuest duration so user understands the time cost.
 - [ ] **"Open in Google Maps" button**: After building route, deep-link to Google Maps with the same waypoints. Format: `https://www.google.com/maps/dir/?api=1&origin=...&destination=...&waypoints=...`
 - [ ] **Marker clustering**: When user has 20+ favorites close together, cluster them with a count badge. Use `@googlemaps/markerclusterer`.
 - [ ] **Click-to-save on map**: Let user click a place on the map to open the Place info and save it as a favorite directly.
@@ -700,9 +700,9 @@ Listed in rough priority order.
 - [ ] **Edit favorite**: Change name, category, or delete from the favorites panel.
 - [ ] **Reorder favorites**: Drag to reorder in the list.
 - [ ] **Filter favorites by category**: Category filter chips above the list in FavoritesPanel.
-- [ ] **"Detour from current location" vs "Detour from typed origin"**: Let user type a custom origin instead of always using GPS.
+- [ ] **"SideQuest from current location" vs "typed origin"**: Let user type a custom origin instead of always using GPS.
 - [ ] **Favorite visit history**: Track last time a stop was included in a route. Show "last visited 3 days ago".
-- [ ] **Distance label on each favorite in DetourModal**: Show "0.4 mi off route" next to each nearby favorite.
+- [ ] **Distance label on each favorite in SideQuestModal**: Show "0.4 mi off route" next to each nearby favorite.
 
 ### P3 — Platform Expansion
 
@@ -722,7 +722,7 @@ Listed in rough priority order.
 2. Read `utils/favorites.js` — understand the data model
 3. Read `utils/routes.js` — understand the API calls
 4. Read `MapPage.jsx` — understand map init and the ref architecture
-5. Read `DetourModal.jsx` — understand the step machine
+5. Read `SideQuestModal.jsx` — understand the step machine
 
 ### Rules for Codex when modifying this codebase
 
@@ -751,14 +751,14 @@ Listed in rough priority order.
 | Task | File(s) to modify |
 |---|---|
 | Add a new favorite category | `utils/favorites.js` (CATEGORIES), `index.css` (CSS var) |
-| Change the proximity radius | `DetourModal.jsx` (filterFavoritesNearRoute call), optionally expose as prop |
+| Change the proximity radius | `SideQuestModal.jsx` (filterFavoritesNearRoute call), optionally expose as prop |
 | Add a new map style | `MapPage.jsx` (darkMapStyle array) |
-| Change detour button logic | `MapPage.jsx` (disabled condition) |
+| Change SideQuest button logic | `MapPage.jsx` (disabled condition) |
 | Add a new modal | Create in `src/components/`, add show state to `MapPage.jsx` or `App.jsx`, follow bottom sheet pattern |
 | Add a new tab | `Header.jsx` (tab list), `App.jsx` (render branch) |
 | Fix the geolocation fallback bug | `MapPage.jsx` — move map init outside geolocation callback, use fallback center |
-| Add route comparison (direct vs detour) | `DetourModal.jsx` — call `getDirectRoute` in parallel, compute duration delta |
-| Add "Open in Google Maps" button | `DetourModal.jsx` (done step) — construct Maps URL from result waypoints |
+| Add route comparison (direct vs SideQuest) | `SideQuestModal.jsx` — call `getDirectRoute` in parallel, compute duration delta |
+| Add "Open in Google Maps" button | `SideQuestModal.jsx` (done step) — construct Maps URL from result waypoints |
 | Add duplicate detection | `utils/favorites.js` (addFavorite) — check placeId before prepending |
 | Add localStorage quota error handling | `utils/favorites.js` (saveFavorites) — wrap in try/catch, return error signal |
 | Add marker clustering | `MapPage.jsx` — install `@googlemaps/markerclusterer`, replace direct Marker creation |

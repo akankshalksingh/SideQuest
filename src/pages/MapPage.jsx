@@ -1,7 +1,7 @@
 import { AlertTriangle, Navigation, Plus, Search, X } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import AddFavoriteModal from '../components/AddFavoriteModal.jsx';
-import DetourModal from '../components/DetourModal.jsx';
+import SideQuestModal from '../components/SideQuestModal.jsx';
 import { CATEGORIES, addFavorite } from '../utils/favorites.js';
 
 const DEFAULT_CENTER = { lat: 37.7749, lng: -122.4194 };
@@ -35,7 +35,7 @@ export default function MapPage({ favorites, setFavorites }) {
 
   const [userLocation, setUserLocation] = useState(null);
   const [destination, setDestination] = useState(null);
-  const [showDetour, setShowDetour] = useState(false);
+  const [showSideQuest, setShowSideQuest] = useState(false);
   const [showAddFav, setShowAddFav] = useState(false);
   const [routeActive, setRouteActive] = useState(false);
   const [locationError, setLocationError] = useState('');
@@ -238,12 +238,12 @@ export default function MapPage({ favorites, setFavorites }) {
           </button>
           <button
             type="button"
-            className="primary-action detour-button"
+            className="primary-action sidequest-button"
             disabled={!userLocation || !destination || favorites.length === 0}
-            onClick={() => setShowDetour(true)}
+            onClick={() => setShowSideQuest(true)}
           >
             <Navigation size={18} aria-hidden="true" />
-            Detour
+            SideQuest
           </button>
         </div>
 
@@ -256,19 +256,19 @@ export default function MapPage({ favorites, setFavorites }) {
                 ? userLocation
                   ? 'Ready to find favorites along the way.'
                   : 'Location access is needed to build a route from here.'
-                : 'Set a destination to enable Detour.'}
+                : 'Set a destination to enable SideQuest.'}
         </p>
       </div>
 
       {showAddFav && <AddFavoriteModal onClose={() => setShowAddFav(false)} onAdd={handleAddFavorite} />}
 
-      {showDetour && userLocation && destination && rendererRef.current && (
-        <DetourModal
+      {showSideQuest && userLocation && destination && rendererRef.current && (
+        <SideQuestModal
           origin={userLocation}
           destination={destination}
           favorites={favorites}
           directionsRenderer={rendererRef.current}
-          onClose={() => setShowDetour(false)}
+          onClose={() => setShowSideQuest(false)}
           onRouteReady={() => setRouteActive(true)}
         />
       )}
