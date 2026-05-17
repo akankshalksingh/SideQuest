@@ -1,23 +1,20 @@
-import { Folder, Trash2 } from 'lucide-react';
+import { Folder, Plus, Search, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import CategoryIcon from './CategoryIcon.jsx';
-import { CATEGORIES, addList, removeFavorite } from '../utils/favorites.js';
+import CreateCollectionModal from './CreateCollectionModal.jsx';
+import { CATEGORIES, removeFavorite } from '../utils/favorites.js';
 
 export default function FavoritesPanel({ favorites, setFavorites, lists, setLists }) {
-  const [collectionName, setCollectionName] = useState('');
-  const [collectionError, setCollectionError] = useState('');
+  const [search, setSearch] = useState('');
+  const [showCreateCollection, setShowCreateCollection] = useState(false);
+  const normalizedSearch = search.trim().toLowerCase();
+  const filteredLists = normalizedSearch
+    ? lists.filter((list) => list.name.toLowerCase().includes(normalizedSearch))
+    : lists;
 
   function handleRemove(id) {
     const result = removeFavorite(favorites, id);
     setFavorites(result.favorites);
-  }
-
-  function handleCreateCollection(event) {
-    event.preventDefault();
-    const result = addList(lists, collectionName);
-    setCollectionError(result.error);
-    setLists(result.lists);
-    if (result.list) setCollectionName('');
   }
 
   return (
@@ -29,21 +26,24 @@ export default function FavoritesPanel({ favorites, setFavorites, lists, setList
         <h1>Your route collections</h1>
       </div>
 
-      <form className="collection-create" onSubmit={handleCreateCollection}>
-        <input
-          type="text"
-          value={collectionName}
-          placeholder="Name a collection, e.g. Scenic Route"
-          onChange={(event) => setCollectionName(event.target.value)}
-        />
-        <button type="submit" className="primary-action">
+      <div className="collection-toolbar">
+        <label className="search-field collection-search">
+          <Search size={18} aria-hidden="true" />
+          <input
+            type="search"
+            value={search}
+            placeholder="Search collections"
+            onChange={(event) => setSearch(event.target.value)}
+          />
+        </label>
+        <button type="button" className="primary-action" onClick={() => setShowCreateCollection(true)}>
+          <Plus size={18} aria-hidden="true" />
           Create Collection
         </button>
-      </form>
-      {collectionError && <p className="helper-text error-text">{collectionError}</p>}
+      </div>
 
       <div className="list-stack">
-        {lists.map((list) => {
+        {filteredLists.map((list) => {
           const listPlaces = favorites.filter((favorite) => favorite.listId === list.id);
 
           return (
@@ -93,6 +93,21 @@ export default function FavoritesPanel({ favorites, setFavorites, lists, setList
           );
         })}
       </div>
+
+      {filteredLists.length === 0 && (
+        <div className="empty-state compact">
+          <h2>No collections found</h2>
+          <p>Try a different search or create a new collection.</p>
+        </div>
+      )}
+
+      {showCreateCollection && (
+        <CreateCollectionModal
+          lists={lists}
+          setLists={setLists}
+          onClose={() => setShowCreateCollection(false)}
+        />
+      )}
     </div>
   );
 }

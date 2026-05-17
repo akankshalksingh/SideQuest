@@ -307,14 +307,23 @@ button:disabled {
   margin-bottom: 22px;
 }
 
-.collection-create {
+.collection-toolbar {
   display: grid;
   grid-template-columns: 1fr auto;
   gap: 10px;
   margin-bottom: 16px;
 }
 
-.collection-create input {
+.collection-search {
+  box-shadow: none;
+}
+
+.modal-form {
+  display: grid;
+  gap: 12px;
+}
+
+.modal-form input {
   min-width: 0;
   min-height: 50px;
   padding: 0 14px;
@@ -488,6 +497,10 @@ h3 {
   background: var(--surface);
   box-shadow: var(--shadow);
   animation: slide-up 180ms ease-out;
+}
+
+.compact-sheet {
+  width: min(520px, 100%);
 }
 
 .sheet-header {
@@ -762,7 +775,7 @@ h3 {
     grid-template-columns: repeat(3, 1fr);
   }
 
-  .collection-create {
+  .collection-toolbar {
     grid-template-columns: 1fr;
   }
 
