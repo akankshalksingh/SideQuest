@@ -3,10 +3,10 @@ import { useEffect, useRef, useState } from 'react';
 import CategoryIcon from './CategoryIcon.jsx';
 import { CATEGORIES, addList } from '../utils/favorites.js';
 
-export default function AddFavoriteModal({ lists, setLists, onClose, onAdd }) {
+export default function AddFavoriteModal({ lists, setLists, initialPlace = null, onClose, onAdd }) {
   const inputRef = useRef(null);
   const autocompleteRef = useRef(null);
-  const [selected, setSelected] = useState(null);
+  const [selected, setSelected] = useState(initialPlace);
   const [category, setCategory] = useState('other');
   const [listId, setListId] = useState(lists[0]?.id || '');
   const [newListName, setNewListName] = useState('');
@@ -26,6 +26,12 @@ export default function AddFavoriteModal({ lists, setLists, onClose, onAdd }) {
 
     return () => listener.remove();
   }, []);
+
+  useEffect(() => {
+    if (!initialPlace) return;
+    setSelected(initialPlace);
+    if (inputRef.current) inputRef.current.value = initialPlace.name || initialPlace.formatted_address || '';
+  }, [initialPlace]);
 
   function handleSave() {
     if (!selected?.geometry) return;
@@ -47,7 +53,7 @@ export default function AddFavoriteModal({ lists, setLists, onClose, onAdd }) {
       <section className="sheet" role="dialog" aria-modal="true" aria-label="Add a route anchor to a collection">
         <div className="sheet-header">
           <div>
-            <p className="eyebrow">Collection anchor</p>
+            <p className="eyebrow">{initialPlace ? 'Map selection' : 'Collection anchor'}</p>
             <h2>Add pass-through point</h2>
           </div>
           <button type="button" className="icon-button" aria-label="Close" onClick={onClose}>

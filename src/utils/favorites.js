@@ -143,12 +143,22 @@ export function addFavorite(favorites, place, category, listId = DEFAULT_LIST_ID
   }
 
   const location = place.geometry?.location;
+  const lat = typeof location?.lat === 'function' ? location.lat() : location?.lat;
+  const lng = typeof location?.lng === 'function' ? location.lng() : location?.lng;
+  if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
+    return {
+      favorites,
+      error: 'That route anchor could not be saved because it has no location.',
+      added: false,
+    };
+  }
+
   const favorite = {
     id: Date.now().toString(),
     name: place.name || 'Saved place',
     address: place.formatted_address || place.vicinity || '',
-    lat: location.lat(),
-    lng: location.lng(),
+    lat,
+    lng,
     category: CATEGORIES[category] ? category : 'other',
     listId,
     placeId,

@@ -41,6 +41,7 @@ export default function MapPage({ favorites, setFavorites, lists, setLists }) {
   const [locationError, setLocationError] = useState('');
   const [saveError, setSaveError] = useState('');
   const [mapReady, setMapReady] = useState(false);
+  const [pendingMapPlace, setPendingMapPlace] = useState(null);
 
   const setUserMarker = useCallback((position) => {
     if (!mapInstance.current) return;
@@ -172,6 +173,25 @@ export default function MapPage({ favorites, setFavorites, lists, setLists }) {
     });
   }, [favorites, mapReady]);
 
+  useEffect(() => {
+    if (!mapReady || !mapInstance.current) return undefined;
+
+    const listener = mapInstance.current.addListener('click', async (event) => {
+      if (!event.latLng) return;
+      if (event.placeId && event.stop) event.stop();
+
+      try {
+        const place = await resolveMapClickPlace(event, mapInstance.current);
+        setPendingMapPlace(place);
+        setShowAddFav(true);
+      } catch {
+        setSaveError('Could not read that map point. Try searching for it instead.');
+      }
+    });
+
+    return () => listener.remove();
+  }, [mapReady]);
+
   function clearRoute() {
     rendererRef.current?.setDirections({ routes: [] });
     setDestination(null);
@@ -183,7 +203,10 @@ export default function MapPage({ favorites, setFavorites, lists, setLists }) {
     const result = addFavorite(favorites, place, category, listId);
     setSaveError(result.error);
     setFavorites(result.favorites);
-    if (result.added) setShowAddFav(false);
+    if (result.added) {
+      setShowAddFav(false);
+      setPendingMapPlace(null);
+    }
   }
 
   return (
@@ -231,7 +254,14 @@ export default function MapPage({ favorites, setFavorites, lists, setLists }) {
         </div>
 
         <div className="action-row">
-          <button type="button" className="primary-action" onClick={() => setShowAddFav(true)}>
+          <button
+            type="button"
+            className="primary-action"
+            onClick={() => {
+              setPendingMapPlace(null);
+              setShowAddFav(true);
+            }}
+          >
             <Plus size={18} aria-hidden="true" />
             Add Route Anchor
           </button>
@@ -263,7 +293,11 @@ export default function MapPage({ favorites, setFavorites, lists, setLists }) {
         <AddFavoriteModal
           lists={lists}
           setLists={setLists}
-          onClose={() => setShowAddFav(false)}
+          initialPlace={pendingMapPlace}
+          onClose={() => {
+            setShowAddFav(false);
+            setPendingMapPlace(null);
+          }}
           onAdd={handleAddFavorite}
         />
       )}
@@ -281,4 +315,47 @@ export default function MapPage({ favorites, setFavorites, lists, setLists }) {
       )}
     </div>
   );
+}
+
+function resolveMapClickPlace(event, map) {
+  if (event.placeId) {
+    return new Promise((resolve) => {
+      const service = new window.google.maps.places.PlacesService(map);
+      service.getDetails(
+        {
+          placeId: event.placeId,
+          fields: ['geometry', 'name', 'formatted_address', 'vicinity', 'place_id'],
+        },
+        (place, status) => {
+          if (status === window.google.maps.places.PlacesServiceStatus.OK && place?.geometry) {
+            resolve(place);
+            return;
+          }
+          resolve(createDroppedPinPlace(event.latLng));
+        },
+      );
+    });
+  }
+
+  return new Promise((resolve) => {
+    const geocoder = new window.google.maps.Geocoder();
+    geocoder.geocode({ location: event.latLng }, (results, status) => {
+      const bestResult = status === window.google.maps.GeocoderStatus.OK ? results?.[0] : null;
+      resolve({
+        name: bestResult?.formatted_address || 'Dropped pin',
+        formatted_address: bestResult?.formatted_address || '',
+        place_id: bestResult?.place_id || null,
+        geometry: { location: event.latLng },
+      });
+    });
+  });
+}
+
+function createDroppedPinPlace(latLng) {
+  return {
+    name: 'Dropped pin',
+    formatted_address: '',
+    place_id: null,
+    geometry: { location: latLng },
+  };
 }
