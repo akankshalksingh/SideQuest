@@ -1,0 +1,40 @@
+# SideQuest
+
+SideQuest is a route-planning app that finds your saved favorite places near the path to a destination, then builds an optimized Google Maps route through the stops you choose.
+
+## Local Setup
+
+```bash
+npm install
+cp .env.example .env
+npm run dev
+```
+
+Add your Google Maps Platform key to `.env`:
+
+```bash
+VITE_GOOGLE_MAPS_API_KEY=AIza...
+```
+
+Enable these Google APIs:
+
+- Maps JavaScript API
+- Places API
+- Directions API
+
+## Deploy On Vercel
+
+1. Import the `SideQuest` GitHub repo in Vercel.
+2. Use the default Vite settings:
+   - Build command: `npm run build`
+   - Output directory: `dist`
+3. Add `VITE_GOOGLE_MAPS_API_KEY` to Production, Preview, and Development environment variables.
+4. After deployment, restrict the Google API key to:
+   - `https://your-vercel-project.vercel.app/*`
+   - `http://localhost:5173/*`
+
+## Production Notes
+
+- The Google Maps key is intentionally exposed in the client bundle, as required by browser Maps apps. Protect it with HTTP referrer restrictions in Google Cloud.
+- Favorites are stored locally in the browser with `localStorage`.
+- Geolocation failure falls back to San Francisco so the map remains usable.
