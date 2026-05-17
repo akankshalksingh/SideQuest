@@ -166,7 +166,7 @@ export default function SideQuestModal({
               disabled={!selectedStops.length}
               onClick={buildRoute}
             >
-              Build Route With {selectedStops.length} Stop{selectedStops.length === 1 ? '' : 's'}
+              Use {selectedStops.length} Saved Place{selectedStops.length === 1 ? '' : 's'}
             </button>
           </>
         )}

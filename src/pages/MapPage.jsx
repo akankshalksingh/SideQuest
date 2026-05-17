@@ -215,7 +215,7 @@ export default function MapPage({ favorites, setFavorites }) {
             <input
               ref={destRef}
               type="search"
-              placeholder="Where are you headed?"
+              placeholder="Destination for later"
               autoComplete="off"
               onChange={() => {
                 setDestination(null);
@@ -231,18 +231,18 @@ export default function MapPage({ favorites, setFavorites }) {
         </div>
 
         <div className="action-row">
-          <button type="button" className="secondary-action" onClick={() => setShowAddFav(true)}>
+          <button type="button" className="primary-action" onClick={() => setShowAddFav(true)}>
             <Plus size={18} aria-hidden="true" />
-            Save
+            Save Favorite
           </button>
           <button
             type="button"
-            className="primary-action sidequest-button"
+            className="secondary-action sidequest-button"
             disabled={!userLocation || !destination || favorites.length === 0}
             onClick={() => setShowSideQuest(true)}
           >
             <Navigation size={18} aria-hidden="true" />
-            SideQuest
+            Find On Route
           </button>
         </div>
 
@@ -250,12 +250,12 @@ export default function MapPage({ favorites, setFavorites }) {
           {routeActive
             ? 'Optimized route is on the map.'
             : favorites.length === 0
-              ? 'Save a few favorite places first.'
+              ? 'Save favorite places like Marina Green or Presidio.'
               : destination
                 ? userLocation
-                  ? 'Ready to find favorites along the way.'
+                  ? 'SideQuest will only use your saved favorites.'
                   : 'Location access is needed to build a route from here.'
-                : 'Set a destination to enable SideQuest.'}
+                : 'Set a destination whenever you want route suggestions.'}
         </p>
       </div>
 

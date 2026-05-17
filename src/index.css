@@ -223,7 +223,7 @@ button:disabled {
 
 .action-row {
   display: grid;
-  grid-template-columns: 0.82fr 1.18fr;
+  grid-template-columns: 1.18fr 0.82fr;
   gap: 10px;
 }
 
@@ -255,6 +255,10 @@ button:disabled {
   background: var(--surface-soft);
   color: var(--text);
   box-shadow: var(--shadow);
+}
+
+.secondary-action:disabled {
+  opacity: 0.48;
 }
 
 .map-hint {

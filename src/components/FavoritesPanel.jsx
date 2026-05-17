@@ -12,13 +12,13 @@ export default function FavoritesPanel({ favorites, setFavorites }) {
     <div className="favorites-view">
       <div className="section-heading">
         <p className="eyebrow">{favorites.length} saved</p>
-        <h1>Favorite stops</h1>
+        <h1>Your places</h1>
       </div>
 
       {favorites.length === 0 ? (
         <div className="empty-state">
           <h2>No favorites yet</h2>
-          <p>Save coffee, food, gas, shops, or any place you want SideQuest to find later.</p>
+          <p>Save parks, neighborhoods, cafes, stores, or anything you want SideQuest to remember.</p>
         </div>
       ) : (
         <ul className="favorite-list">

@@ -35,7 +35,7 @@ export default function AddFavoriteModal({ onClose, onAdd }) {
         <div className="sheet-header">
           <div>
             <p className="eyebrow">New favorite</p>
-            <h2>Save a stop</h2>
+            <h2>Save favorite place</h2>
           </div>
           <button type="button" className="icon-button" aria-label="Close" onClick={onClose}>
             <X size={20} aria-hidden="true" />
@@ -47,7 +47,7 @@ export default function AddFavoriteModal({ onClose, onAdd }) {
           <input
             ref={inputRef}
             type="search"
-            placeholder="Search for a place"
+            placeholder="Marina Green, Presidio, coffee..."
             autoComplete="off"
             onChange={() => setSelected(null)}
           />
@@ -74,7 +74,7 @@ export default function AddFavoriteModal({ onClose, onAdd }) {
             <span>{selected.name}</span>
           </div>
         ) : (
-          <p className="helper-text">Choose a result from the Google suggestions to save it.</p>
+          <p className="helper-text">Choose a Google result to save it to your favorites.</p>
         )}
 
         <button type="button" className="primary-action" disabled={!selected} onClick={handleSave}>
