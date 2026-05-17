@@ -188,9 +188,8 @@ export default function MapPage({ favorites, setFavorites }) {
 
   return (
     <div className="map-page">
-      <div className="map-canvas" ref={mapRef}>
-        {!mapReady && <span className="map-loading">Waiting for your location</span>}
-      </div>
+      <div className="map-canvas" ref={mapRef} />
+      {!mapReady && <span className="map-loading">Waiting for your location</span>}
 
       <div className="map-controls">
         {locationError && (
