@@ -44,10 +44,10 @@ export default function AddFavoriteModal({ lists, setLists, onClose, onAdd }) {
 
   return (
     <div className="modal-backdrop" onClick={(event) => event.target === event.currentTarget && onClose()}>
-      <section className="sheet" role="dialog" aria-modal="true" aria-label="Add a route anchor to a list">
+      <section className="sheet" role="dialog" aria-modal="true" aria-label="Add a route anchor to a collection">
         <div className="sheet-header">
           <div>
-            <p className="eyebrow">Route anchor</p>
+            <p className="eyebrow">Collection anchor</p>
             <h2>Add pass-through point</h2>
           </div>
           <button type="button" className="icon-button" aria-label="Close" onClick={onClose}>
@@ -66,7 +66,7 @@ export default function AddFavoriteModal({ lists, setLists, onClose, onAdd }) {
           />
         </label>
 
-        <div className="list-picker" aria-label="Route list">
+        <div className="list-picker" aria-label="Route collection">
           {lists.map((list) => (
             <button
               key={list.id}
@@ -83,7 +83,7 @@ export default function AddFavoriteModal({ lists, setLists, onClose, onAdd }) {
           <input
             type="text"
             value={newListName}
-            placeholder="New list name, e.g. No Embarcadero"
+            placeholder="New collection name, e.g. No Embarcadero"
             onChange={(event) => setNewListName(event.target.value)}
           />
           <button type="button" className="icon-button" aria-label="Create list" onClick={handleCreateList}>
@@ -117,7 +117,7 @@ export default function AddFavoriteModal({ lists, setLists, onClose, onAdd }) {
         )}
 
         <button type="button" className="primary-action" disabled={!selected || !listId} onClick={handleSave}>
-          Add to Route List
+          Add to Collection
         </button>
       </section>
     </div>

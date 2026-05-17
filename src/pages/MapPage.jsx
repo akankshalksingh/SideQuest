@@ -250,10 +250,10 @@ export default function MapPage({ favorites, setFavorites, lists, setLists }) {
           {routeActive
             ? 'Optimized route is on the map.'
             : favorites.length === 0
-              ? 'Create scenic or shortcut lists with route anchors.'
-              : destination
-                ? userLocation
-                  ? 'Choose a list and SideQuest will draw one route.'
+              ? 'Create scenic or shortcut collections with route anchors.'
+            : destination
+              ? userLocation
+                  ? 'Choose a collection and SideQuest will draw one route.'
                   : 'Location access is needed to build a route from here.'
                 : 'Set a destination whenever you want route suggestions.'}
         </p>

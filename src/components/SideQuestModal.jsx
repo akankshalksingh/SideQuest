@@ -105,14 +105,14 @@ export default function SideQuestModal({
         <div className="sheet-header">
           <div>
             <p className="eyebrow">To {destination.name}</p>
-            <h2>Choose a route list</h2>
+            <h2>Choose a collection</h2>
           </div>
           <button type="button" className="icon-button" aria-label="Close" onClick={onClose}>
             <X size={20} aria-hidden="true" />
           </button>
         </div>
 
-        <div className="list-picker modal-list-picker" aria-label="Route list">
+        <div className="list-picker modal-list-picker" aria-label="Route collection">
           {lists.map((list) => (
             <button
               key={list.id}
@@ -129,12 +129,12 @@ export default function SideQuestModal({
           ))}
         </div>
 
-        {step === 'loading' && <LoadingState label={`Loading ${activeList?.name || 'your route list'}`} />}
+        {step === 'loading' && <LoadingState label={`Loading ${activeList?.name || 'your collection'}`} />}
         {step === 'routing' && <LoadingState label="Drawing one curated route" />}
 
         {step === 'empty' && (
           <div className="empty-state compact">
-            <h3>This route list is empty</h3>
+            <h3>This collection is empty</h3>
             <p>Add places like Marina Green as route anchors, not stops.</p>
           </div>
         )}

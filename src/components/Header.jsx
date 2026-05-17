@@ -23,7 +23,7 @@ export default function Header({ activeTab, setActiveTab }) {
           onClick={() => setActiveTab('lists')}
         >
           <Folder size={18} aria-hidden="true" />
-          <span>Lists</span>
+          <span>Collections</span>
         </button>
       </nav>
     </header>
