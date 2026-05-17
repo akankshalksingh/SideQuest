@@ -33,8 +33,9 @@ export function isNearPath(latLng, path, maxMeters = 3000) {
 
   const point = new window.google.maps.LatLng(latLng.lat, latLng.lng);
   const tolerance = maxMeters / 111320;
+  const polyline = new window.google.maps.Polyline({ path });
 
-  if (window.google.maps.geometry.poly.isLocationOnEdge(point, path, tolerance)) {
+  if (window.google.maps.geometry.poly.isLocationOnEdge(point, polyline, tolerance)) {
     return true;
   }
 
