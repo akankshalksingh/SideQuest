@@ -28,6 +28,15 @@ export function useGoogleMaps() {
     let timeoutId;
     const existingScript = document.getElementById(SCRIPT_ID);
 
+    window.gm_authFailure = () => {
+      window.clearTimeout(timeoutId);
+      setState({
+        isLoaded: false,
+        error:
+          'Google Maps rejected this API key for this domain. Add the Vercel URL to the key referrer restrictions and confirm Maps JavaScript, Places, and Directions APIs are enabled.',
+      });
+    };
+
     window[CALLBACK_NAME] = () => {
       window.clearTimeout(timeoutId);
       if (window.google?.maps) {
