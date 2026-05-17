@@ -1,5 +1,7 @@
 export const FAVORITES_KEY = 'sidequest_favorites';
+export const LISTS_KEY = 'sidequest_lists';
 export const MAX_FAVORITES = 200;
+export const DEFAULT_LIST_ID = 'default-list';
 
 export const CATEGORIES = {
   coffee: { label: 'Coffee', icon: 'Coffee', color: 'var(--cat-coffee)' },
@@ -20,8 +22,81 @@ function normalizeFavorite(favorite) {
     lat: favorite.lat,
     lng: favorite.lng,
     category: CATEGORIES[favorite.category] ? favorite.category : 'other',
+    listId: favorite.listId || DEFAULT_LIST_ID,
     placeId: favorite.placeId || null,
     addedAt: favorite.addedAt || new Date().toISOString(),
+  };
+}
+
+function normalizeList(list) {
+  if (!list || typeof list !== 'object') return null;
+
+  return {
+    id: String(list.id || crypto.randomUUID()),
+    name: String(list.name || 'My Route List'),
+    color: String(list.color || 'var(--accent)'),
+    createdAt: list.createdAt || new Date().toISOString(),
+  };
+}
+
+export function loadLists() {
+  try {
+    const raw = window.localStorage.getItem(LISTS_KEY);
+    const parsed = raw ? JSON.parse(raw) : null;
+    const lists = Array.isArray(parsed) ? parsed.map(normalizeList).filter(Boolean) : [];
+    return lists.length ? lists : getDefaultLists();
+  } catch {
+    return getDefaultLists();
+  }
+}
+
+function getDefaultLists() {
+  return [
+    {
+      id: DEFAULT_LIST_ID,
+      name: 'My Route List',
+      color: 'var(--accent)',
+      createdAt: new Date().toISOString(),
+    },
+  ];
+}
+
+export function saveLists(lists) {
+  try {
+    window.localStorage.setItem(LISTS_KEY, JSON.stringify(lists));
+    return { ok: true, error: '' };
+  } catch {
+    return {
+      ok: false,
+      error: 'Lists could not be saved. Browser storage may be full or disabled.',
+    };
+  }
+}
+
+export function addList(lists, name) {
+  const cleanName = name.trim();
+  if (!cleanName) {
+    return { lists, list: null, error: 'Name the list before creating it.' };
+  }
+
+  const duplicate = lists.find((list) => list.name.toLowerCase() === cleanName.toLowerCase());
+  if (duplicate) {
+    return { lists, list: duplicate, error: '' };
+  }
+
+  const list = {
+    id: Date.now().toString(),
+    name: cleanName,
+    color: 'var(--accent)',
+    createdAt: new Date().toISOString(),
+  };
+  const nextLists = [list, ...lists];
+  const result = saveLists(nextLists);
+
+  return {
+    lists: result.ok ? nextLists : lists,
+    list: result.ok ? list : null,
+    error: result.error,
   };
 }
 
@@ -49,12 +124,12 @@ export function saveFavorites(favorites) {
   }
 }
 
-export function addFavorite(favorites, place, category) {
+export function addFavorite(favorites, place, category, listId = DEFAULT_LIST_ID) {
   const placeId = place.place_id || null;
-  if (placeId && favorites.some((favorite) => favorite.placeId === placeId)) {
+  if (placeId && favorites.some((favorite) => favorite.placeId === placeId && favorite.listId === listId)) {
     return {
       favorites,
-      error: 'That place is already in your favorites.',
+      error: 'That place is already in this list.',
       added: false,
     };
   }
@@ -75,6 +150,7 @@ export function addFavorite(favorites, place, category) {
     lat: location.lat(),
     lng: location.lng(),
     category: CATEGORIES[category] ? category : 'other',
+    listId,
     placeId,
     addedAt: new Date().toISOString(),
   };

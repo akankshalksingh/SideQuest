@@ -5,7 +5,7 @@ function routeStatusMessage(status) {
   const messages = {
     ZERO_RESULTS: 'No driving route was found for that destination.',
     NOT_FOUND: 'One of the route locations could not be found.',
-    MAX_WAYPOINTS_EXCEEDED: 'Google Maps supports up to 25 stops per optimized route.',
+    MAX_WAYPOINTS_EXCEEDED: 'Google Maps supports up to 25 saved places in one route.',
     REQUEST_DENIED: 'Google denied the route request. Check enabled APIs and key restrictions.',
     OVER_DAILY_LIMIT: 'The Google Maps quota or billing limit was reached.',
     OVER_QUERY_LIMIT: 'Too many route requests were made. Try again shortly.',
@@ -67,7 +67,7 @@ export async function getDirectRoute(origin, destination) {
 
 export async function getRouteWithWaypoints(origin, destination, waypoints) {
   if (waypoints.length > MAX_WAYPOINTS) {
-    throw new Error(`Choose ${MAX_WAYPOINTS} stops or fewer for one route.`);
+    throw new Error(`Choose ${MAX_WAYPOINTS} saved places or fewer for one route.`);
   }
 
   return directionsRoute({
@@ -77,7 +77,7 @@ export async function getRouteWithWaypoints(origin, destination, waypoints) {
       location: { lat: favorite.lat, lng: favorite.lng },
       stopover: true,
     })),
-    optimizeWaypoints: true,
+    optimizeWaypoints: false,
     travelMode: window.google.maps.TravelMode.DRIVING,
   });
 }

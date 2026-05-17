@@ -4,12 +4,13 @@ import Header from './components/Header.jsx';
 import FavoritesPanel from './components/FavoritesPanel.jsx';
 import MapPage from './pages/MapPage.jsx';
 import { useGoogleMaps } from './hooks/useGoogleMaps.js';
-import { loadFavorites } from './utils/favorites.js';
+import { loadFavorites, loadLists } from './utils/favorites.js';
 
 export default function App() {
   const { isLoaded, error } = useGoogleMaps();
   const [activeTab, setActiveTab] = useState('map');
   const [favorites, setFavorites] = useState(loadFavorites);
+  const [lists, setLists] = useState(loadLists);
 
   if (error) {
     return (
@@ -40,10 +41,10 @@ export default function App() {
       <Header activeTab={activeTab} setActiveTab={setActiveTab} />
       <main className="app-main">
         <section className={activeTab === 'map' ? 'tab-panel active' : 'tab-panel'}>
-          <MapPage favorites={favorites} setFavorites={setFavorites} />
+          <MapPage favorites={favorites} setFavorites={setFavorites} lists={lists} setLists={setLists} />
         </section>
-        <section className={activeTab === 'favorites' ? 'tab-panel active' : 'tab-panel'}>
-          <FavoritesPanel favorites={favorites} setFavorites={setFavorites} />
+        <section className={activeTab === 'lists' ? 'tab-panel active' : 'tab-panel'}>
+          <FavoritesPanel favorites={favorites} setFavorites={setFavorites} lists={lists} setLists={setLists} />
         </section>
       </main>
     </div>

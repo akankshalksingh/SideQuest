@@ -15,6 +15,7 @@ export default function SideQuestModal({
   origin,
   destination,
   favorites,
+  lists,
   onClose,
   onRouteReady,
   directionsRenderer,
@@ -22,9 +23,16 @@ export default function SideQuestModal({
   const [step, setStep] = useState('loading');
   const [nearbyFavs, setNearbyFavs] = useState([]);
   const [selected, setSelected] = useState(() => new Set());
+  const [listId, setListId] = useState(lists[0]?.id || '');
   const [routeInfo, setRouteInfo] = useState(null);
   const [directInfo, setDirectInfo] = useState(null);
   const [errorMsg, setErrorMsg] = useState('');
+
+  const activeList = lists.find((list) => list.id === listId) || lists[0];
+  const listPlaces = useMemo(
+    () => favorites.filter((favorite) => favorite.listId === activeList?.id),
+    [favorites, activeList],
+  );
 
   const selectedStops = useMemo(
     () => nearbyFavs.filter((favorite) => selected.has(favorite.id)),
@@ -36,7 +44,7 @@ export default function SideQuestModal({
 
     async function loadNearbyFavorites() {
       try {
-        const result = await filterFavoritesNearRoute(origin, destination, favorites, 4000);
+        const result = await filterFavoritesNearRoute(origin, destination, listPlaces, 4000);
         if (cancelled) return;
 
         setDirectInfo({
@@ -44,6 +52,7 @@ export default function SideQuestModal({
           distance: formatDistance(result.directRoute.distanceMeters),
         });
         setNearbyFavs(result.favorites);
+        setSelected(new Set(result.favorites.map((favorite) => favorite.id)));
         setStep(result.favorites.length ? 'pick' : 'empty');
       } catch (error) {
         if (!cancelled) {
@@ -58,7 +67,7 @@ export default function SideQuestModal({
     return () => {
       cancelled = true;
     };
-  }, [origin, destination, favorites]);
+  }, [origin, destination, listPlaces]);
 
   function toggleFavorite(id) {
     setSelected((current) => {
@@ -97,20 +106,37 @@ export default function SideQuestModal({
         <div className="sheet-header">
           <div>
             <p className="eyebrow">To {destination.name}</p>
-            <h2>Find a SideQuest</h2>
+            <h2>Choose a route list</h2>
           </div>
           <button type="button" className="icon-button" aria-label="Close" onClick={onClose}>
             <X size={20} aria-hidden="true" />
           </button>
         </div>
 
-        {step === 'loading' && <LoadingState label="Finding favorites near your route" />}
-        {step === 'routing' && <LoadingState label="Building the optimized route" />}
+        <div className="list-picker modal-list-picker" aria-label="Route list">
+          {lists.map((list) => (
+            <button
+              key={list.id}
+              type="button"
+              className={activeList?.id === list.id ? 'list-chip active' : 'list-chip'}
+              onClick={() => {
+                if (activeList?.id === list.id) return;
+                setListId(list.id);
+                setStep('loading');
+              }}
+            >
+              {list.name}
+            </button>
+          ))}
+        </div>
+
+        {step === 'loading' && <LoadingState label={`Checking ${activeList?.name || 'your list'} against the route`} />}
+        {step === 'routing' && <LoadingState label="Drawing your curated route" />}
 
         {step === 'empty' && (
           <div className="empty-state compact">
-            <h3>No saved favorites nearby</h3>
-            <p>SideQuest checked your direct route and did not find saved stops within about 2.5 miles.</p>
+            <h3>No places from this list are nearby</h3>
+            <p>SideQuest checked this route against {activeList?.name || 'the selected list'}.</p>
           </div>
         )}
 
@@ -166,7 +192,7 @@ export default function SideQuestModal({
               disabled={!selectedStops.length}
               onClick={buildRoute}
             >
-              Use {selectedStops.length} Saved Place{selectedStops.length === 1 ? '' : 's'}
+              Draw Route From {activeList?.name || 'List'}
             </button>
           </>
         )}
@@ -188,7 +214,7 @@ export default function SideQuestModal({
               </span>
               <span>
                 <strong>{routeInfo.stops}</strong>
-                <small>Stops</small>
+                <small>Places</small>
               </span>
             </div>
             <a

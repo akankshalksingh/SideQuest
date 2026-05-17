@@ -1,13 +1,16 @@
-import { Check, Search, X } from 'lucide-react';
+import { Check, Plus, Search, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import CategoryIcon from './CategoryIcon.jsx';
-import { CATEGORIES } from '../utils/favorites.js';
+import { CATEGORIES, addList } from '../utils/favorites.js';
 
-export default function AddFavoriteModal({ onClose, onAdd }) {
+export default function AddFavoriteModal({ lists, setLists, onClose, onAdd }) {
   const inputRef = useRef(null);
   const autocompleteRef = useRef(null);
   const [selected, setSelected] = useState(null);
   const [category, setCategory] = useState('other');
+  const [listId, setListId] = useState(lists[0]?.id || '');
+  const [newListName, setNewListName] = useState('');
+  const [listError, setListError] = useState('');
 
   useEffect(() => {
     if (!inputRef.current || autocompleteRef.current) return undefined;
@@ -26,16 +29,26 @@ export default function AddFavoriteModal({ onClose, onAdd }) {
 
   function handleSave() {
     if (!selected?.geometry) return;
-    onAdd(selected, category);
+    onAdd(selected, category, listId);
+  }
+
+  function handleCreateList() {
+    const result = addList(lists, newListName);
+    setListError(result.error);
+    setLists(result.lists);
+    if (result.list) {
+      setListId(result.list.id);
+      setNewListName('');
+    }
   }
 
   return (
     <div className="modal-backdrop" onClick={(event) => event.target === event.currentTarget && onClose()}>
-      <section className="sheet" role="dialog" aria-modal="true" aria-label="Save a favorite">
+      <section className="sheet" role="dialog" aria-modal="true" aria-label="Save a place to a list">
         <div className="sheet-header">
           <div>
-            <p className="eyebrow">New favorite</p>
-            <h2>Save favorite place</h2>
+            <p className="eyebrow">Add to a list</p>
+            <h2>Save place to route list</h2>
           </div>
           <button type="button" className="icon-button" aria-label="Close" onClick={onClose}>
             <X size={20} aria-hidden="true" />
@@ -53,7 +66,33 @@ export default function AddFavoriteModal({ onClose, onAdd }) {
           />
         </label>
 
-        <div className="category-grid" aria-label="Favorite category">
+        <div className="list-picker" aria-label="Route list">
+          {lists.map((list) => (
+            <button
+              key={list.id}
+              type="button"
+              className={listId === list.id ? 'list-chip active' : 'list-chip'}
+              onClick={() => setListId(list.id)}
+            >
+              {list.name}
+            </button>
+          ))}
+        </div>
+
+        <div className="new-list-row">
+          <input
+            type="text"
+            value={newListName}
+            placeholder="New list name, e.g. No Embarcadero"
+            onChange={(event) => setNewListName(event.target.value)}
+          />
+          <button type="button" className="icon-button" aria-label="Create list" onClick={handleCreateList}>
+            <Plus size={18} aria-hidden="true" />
+          </button>
+        </div>
+        {listError && <p className="helper-text error-text">{listError}</p>}
+
+        <div className="category-grid" aria-label="Place type">
           {Object.entries(CATEGORIES).map(([key, item]) => (
             <button
               key={key}
@@ -74,11 +113,11 @@ export default function AddFavoriteModal({ onClose, onAdd }) {
             <span>{selected.name}</span>
           </div>
         ) : (
-          <p className="helper-text">Choose a Google result to save it to your favorites.</p>
+          <p className="helper-text">Choose a Google result, then save it into one of your named lists.</p>
         )}
 
-        <button type="button" className="primary-action" disabled={!selected} onClick={handleSave}>
-          Save Favorite
+        <button type="button" className="primary-action" disabled={!selected || !listId} onClick={handleSave}>
+          Save to List
         </button>
       </section>
     </div>

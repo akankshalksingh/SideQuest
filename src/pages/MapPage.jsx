@@ -24,7 +24,7 @@ const darkMapStyle = [
   { featureType: 'water', elementType: 'labels.text.fill', stylers: [{ color: '#7fa7b2' }] },
 ];
 
-export default function MapPage({ favorites, setFavorites }) {
+export default function MapPage({ favorites, setFavorites, lists, setLists }) {
   const mapRef = useRef(null);
   const destRef = useRef(null);
   const mapInstance = useRef(null);
@@ -77,7 +77,7 @@ export default function MapPage({ favorites, setFavorites }) {
 
       const renderer = new window.google.maps.DirectionsRenderer({
         map,
-        suppressMarkers: false,
+        suppressMarkers: true,
         polylineOptions: {
           strokeColor: '#53e6c1',
           strokeOpacity: 0.95,
@@ -179,8 +179,8 @@ export default function MapPage({ favorites, setFavorites }) {
     if (destRef.current) destRef.current.value = '';
   }
 
-  function handleAddFavorite(place, category) {
-    const result = addFavorite(favorites, place, category);
+  function handleAddFavorite(place, category, listId) {
+    const result = addFavorite(favorites, place, category, listId);
     setSaveError(result.error);
     setFavorites(result.favorites);
     if (result.added) setShowAddFav(false);
@@ -233,7 +233,7 @@ export default function MapPage({ favorites, setFavorites }) {
         <div className="action-row">
           <button type="button" className="primary-action" onClick={() => setShowAddFav(true)}>
             <Plus size={18} aria-hidden="true" />
-            Save Favorite
+            Save to List
           </button>
           <button
             type="button"
@@ -250,22 +250,30 @@ export default function MapPage({ favorites, setFavorites }) {
           {routeActive
             ? 'Optimized route is on the map.'
             : favorites.length === 0
-              ? 'Save favorite places like Marina Green or Presidio.'
+              ? 'Create lists like Detour, Scenic Route, or No Embarcadero.'
               : destination
                 ? userLocation
-                  ? 'SideQuest will only use your saved favorites.'
+                  ? 'Choose a list and SideQuest will draw one route.'
                   : 'Location access is needed to build a route from here.'
                 : 'Set a destination whenever you want route suggestions.'}
         </p>
       </div>
 
-      {showAddFav && <AddFavoriteModal onClose={() => setShowAddFav(false)} onAdd={handleAddFavorite} />}
+      {showAddFav && (
+        <AddFavoriteModal
+          lists={lists}
+          setLists={setLists}
+          onClose={() => setShowAddFav(false)}
+          onAdd={handleAddFavorite}
+        />
+      )}
 
       {showSideQuest && userLocation && destination && rendererRef.current && (
         <SideQuestModal
           origin={userLocation}
           destination={destination}
           favorites={favorites}
+          lists={lists}
           directionsRenderer={rendererRef.current}
           onClose={() => setShowSideQuest(false)}
           onRouteReady={() => setRouteActive(true)}

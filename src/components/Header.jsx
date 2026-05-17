@@ -1,4 +1,4 @@
-import { Map, Star } from 'lucide-react';
+import { Folder, Map } from 'lucide-react';
 
 export default function Header({ activeTab, setActiveTab }) {
   return (
@@ -19,11 +19,11 @@ export default function Header({ activeTab, setActiveTab }) {
         </button>
         <button
           type="button"
-          className={activeTab === 'favorites' ? 'tab active' : 'tab'}
-          onClick={() => setActiveTab('favorites')}
+          className={activeTab === 'lists' ? 'tab active' : 'tab'}
+          onClick={() => setActiveTab('lists')}
         >
-          <Star size={18} aria-hidden="true" />
-          <span>Favorites</span>
+          <Folder size={18} aria-hidden="true" />
+          <span>Lists</span>
         </button>
       </nav>
     </header>
