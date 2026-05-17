@@ -1,6 +1,6 @@
 # SideQuest
 
-SideQuest is a route-planning app for named, curated place lists. Build lists like `Detour`, `Scenic Route`, or `No Embarcadero`, then draw one route using places from the list.
+SideQuest is a route-planning app for scenic drives and hidden shortcuts. Build named lists like `Scenic Route` or `No Embarcadero`, add pass-through anchors such as Marina Green, then draw one route that passes through them without treating them as stops.
 
 ## Local Setup
 
@@ -36,5 +36,5 @@ Enable these Google APIs:
 ## Production Notes
 
 - The Google Maps key is intentionally exposed in the client bundle, as required by browser Maps apps. Protect it with HTTP referrer restrictions in Google Cloud.
-- Route lists and saved places are stored locally in the browser with `localStorage`.
+- Route lists and anchors are stored locally in the browser with `localStorage`.
 - Geolocation failure falls back to San Francisco so the map remains usable.

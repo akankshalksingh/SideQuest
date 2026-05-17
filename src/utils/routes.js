@@ -5,7 +5,7 @@ function routeStatusMessage(status) {
   const messages = {
     ZERO_RESULTS: 'No driving route was found for that destination.',
     NOT_FOUND: 'One of the route locations could not be found.',
-    MAX_WAYPOINTS_EXCEEDED: 'Google Maps supports up to 25 saved places in one route.',
+    MAX_WAYPOINTS_EXCEEDED: 'Google Maps supports up to 25 route anchors in one route.',
     REQUEST_DENIED: 'Google denied the route request. Check enabled APIs and key restrictions.',
     OVER_DAILY_LIMIT: 'The Google Maps quota or billing limit was reached.',
     OVER_QUERY_LIMIT: 'Too many route requests were made. Try again shortly.',
@@ -67,7 +67,7 @@ export async function getDirectRoute(origin, destination) {
 
 export async function getRouteWithWaypoints(origin, destination, waypoints) {
   if (waypoints.length > MAX_WAYPOINTS) {
-    throw new Error(`Choose ${MAX_WAYPOINTS} saved places or fewer for one route.`);
+    throw new Error(`Choose ${MAX_WAYPOINTS} route anchors or fewer for one route.`);
   }
 
   return directionsRoute({
@@ -75,7 +75,7 @@ export async function getRouteWithWaypoints(origin, destination, waypoints) {
     destination,
     waypoints: waypoints.map((favorite) => ({
       location: { lat: favorite.lat, lng: favorite.lng },
-      stopover: true,
+      stopover: false,
     })),
     optimizeWaypoints: false,
     travelMode: window.google.maps.TravelMode.DRIVING,
@@ -120,7 +120,7 @@ export function formatDistance(meters) {
   return `${(meters / METERS_PER_MILE).toFixed(1)} mi`;
 }
 
-export function buildGoogleMapsUrl(origin, destination, stops) {
+export function buildGoogleMapsUrl(origin, destination, routeAnchors) {
   const params = new URLSearchParams({
     api: '1',
     origin: `${origin.lat},${origin.lng}`,
@@ -128,8 +128,8 @@ export function buildGoogleMapsUrl(origin, destination, stops) {
     travelmode: 'driving',
   });
 
-  if (stops.length) {
-    params.set('waypoints', stops.map((stop) => `${stop.lat},${stop.lng}`).join('|'));
+  if (routeAnchors.length) {
+    params.set('waypoints', routeAnchors.map((anchor) => `${anchor.lat},${anchor.lng}`).join('|'));
   }
 
   return `https://www.google.com/maps/dir/?${params.toString()}`;

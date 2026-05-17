@@ -137,7 +137,7 @@ export function addFavorite(favorites, place, category, listId = DEFAULT_LIST_ID
   if (favorites.length >= MAX_FAVORITES) {
     return {
       favorites,
-      error: `You can save up to ${MAX_FAVORITES} favorites for this version of SideQuest.`,
+      error: `You can save up to ${MAX_FAVORITES} route anchors for this version of SideQuest.`,
       added: false,
     };
   }

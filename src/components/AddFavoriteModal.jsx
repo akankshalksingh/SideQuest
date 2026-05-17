@@ -44,11 +44,11 @@ export default function AddFavoriteModal({ lists, setLists, onClose, onAdd }) {
 
   return (
     <div className="modal-backdrop" onClick={(event) => event.target === event.currentTarget && onClose()}>
-      <section className="sheet" role="dialog" aria-modal="true" aria-label="Save a place to a list">
+      <section className="sheet" role="dialog" aria-modal="true" aria-label="Add a route anchor to a list">
         <div className="sheet-header">
           <div>
-            <p className="eyebrow">Add to a list</p>
-            <h2>Save place to route list</h2>
+            <p className="eyebrow">Route anchor</p>
+            <h2>Add pass-through point</h2>
           </div>
           <button type="button" className="icon-button" aria-label="Close" onClick={onClose}>
             <X size={20} aria-hidden="true" />
@@ -60,7 +60,7 @@ export default function AddFavoriteModal({ lists, setLists, onClose, onAdd }) {
           <input
             ref={inputRef}
             type="search"
-            placeholder="Marina Green, Presidio, coffee..."
+            placeholder="Marina Green, Presidio, Great Highway..."
             autoComplete="off"
             onChange={() => setSelected(null)}
           />
@@ -113,11 +113,11 @@ export default function AddFavoriteModal({ lists, setLists, onClose, onAdd }) {
             <span>{selected.name}</span>
           </div>
         ) : (
-          <p className="helper-text">Choose a Google result, then save it into one of your named lists.</p>
+          <p className="helper-text">Choose a place you want the drive to pass through, without making it a stop.</p>
         )}
 
         <button type="button" className="primary-action" disabled={!selected || !listId} onClick={handleSave}>
-          Save to List
+          Add to Route List
         </button>
       </section>
     </div>

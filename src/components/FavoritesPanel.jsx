@@ -12,7 +12,7 @@ export default function FavoritesPanel({ favorites, setFavorites, lists }) {
     <div className="favorites-view">
       <div className="section-heading">
         <p className="eyebrow">
-          {lists.length} list{lists.length === 1 ? '' : 's'} · {favorites.length} places
+          {lists.length} list{lists.length === 1 ? '' : 's'} · {favorites.length} anchors
         </p>
         <h1>Your route lists</h1>
       </div>
@@ -20,7 +20,7 @@ export default function FavoritesPanel({ favorites, setFavorites, lists }) {
       {favorites.length === 0 ? (
         <div className="empty-state">
           <h2>No lists built yet</h2>
-          <p>Create lists like Detour, Scenic Route, or No Embarcadero, then save places into them.</p>
+          <p>Create lists like Scenic Route or No Embarcadero, then add pass-through points.</p>
         </div>
       ) : (
         <div className="list-stack">
@@ -36,7 +36,7 @@ export default function FavoritesPanel({ favorites, setFavorites, lists }) {
                   <div>
                     <h2>{list.name}</h2>
                     <p>
-                      {listPlaces.length} saved place{listPlaces.length === 1 ? '' : 's'}
+                      {listPlaces.length} route anchor{listPlaces.length === 1 ? '' : 's'}
                     </p>
                   </div>
                 </div>
@@ -68,7 +68,7 @@ export default function FavoritesPanel({ favorites, setFavorites, lists }) {
                     })}
                   </ul>
                 ) : (
-                  <p className="helper-text">This list is ready for places.</p>
+                  <p className="helper-text">This list is ready for route anchors.</p>
                 )}
               </section>
             );

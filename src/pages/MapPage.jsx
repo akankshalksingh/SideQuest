@@ -233,7 +233,7 @@ export default function MapPage({ favorites, setFavorites, lists, setLists }) {
         <div className="action-row">
           <button type="button" className="primary-action" onClick={() => setShowAddFav(true)}>
             <Plus size={18} aria-hidden="true" />
-            Save to List
+            Add Route Anchor
           </button>
           <button
             type="button"
@@ -250,7 +250,7 @@ export default function MapPage({ favorites, setFavorites, lists, setLists }) {
           {routeActive
             ? 'Optimized route is on the map.'
             : favorites.length === 0
-              ? 'Create lists like Detour, Scenic Route, or No Embarcadero.'
+              ? 'Create scenic or shortcut lists with route anchors.'
               : destination
                 ? userLocation
                   ? 'Choose a list and SideQuest will draw one route.'

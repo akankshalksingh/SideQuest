@@ -1,12 +1,11 @@
-import { Check, ExternalLink, Loader2, Route, X } from 'lucide-react';
+import { Check, Loader2, Route, X } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import CategoryIcon from './CategoryIcon.jsx';
 import { CATEGORIES } from '../utils/favorites.js';
 import {
-  buildGoogleMapsUrl,
-  filterFavoritesNearRoute,
   formatDistance,
   formatDuration,
+  getDirectRoute,
   getRouteWithWaypoints,
   summarizeRoute,
 } from '../utils/routes.js';
@@ -21,7 +20,7 @@ export default function SideQuestModal({
   directionsRenderer,
 }) {
   const [step, setStep] = useState('loading');
-  const [nearbyFavs, setNearbyFavs] = useState([]);
+  const [routeAnchors, setRouteAnchors] = useState([]);
   const [selected, setSelected] = useState(() => new Set());
   const [listId, setListId] = useState(lists[0]?.id || '');
   const [routeInfo, setRouteInfo] = useState(null);
@@ -34,26 +33,26 @@ export default function SideQuestModal({
     [favorites, activeList],
   );
 
-  const selectedStops = useMemo(
-    () => nearbyFavs.filter((favorite) => selected.has(favorite.id)),
-    [nearbyFavs, selected],
+  const selectedAnchors = useMemo(
+    () => routeAnchors.filter((favorite) => selected.has(favorite.id)),
+    [routeAnchors, selected],
   );
 
   useEffect(() => {
     let cancelled = false;
 
-    async function loadNearbyFavorites() {
+    async function loadRouteList() {
       try {
-        const result = await filterFavoritesNearRoute(origin, destination, listPlaces, 4000);
+        const directRoute = await getDirectRoute(origin, destination);
         if (cancelled) return;
 
         setDirectInfo({
-          duration: formatDuration(result.directRoute.durationSeconds),
-          distance: formatDistance(result.directRoute.distanceMeters),
+          duration: formatDuration(directRoute.durationSeconds),
+          distance: formatDistance(directRoute.distanceMeters),
         });
-        setNearbyFavs(result.favorites);
-        setSelected(new Set(result.favorites.map((favorite) => favorite.id)));
-        setStep(result.favorites.length ? 'pick' : 'empty');
+        setRouteAnchors(listPlaces);
+        setSelected(new Set(listPlaces.map((favorite) => favorite.id)));
+        setStep(listPlaces.length ? 'pick' : 'empty');
       } catch (error) {
         if (!cancelled) {
           setErrorMsg(error.message);
@@ -62,7 +61,7 @@ export default function SideQuestModal({
       }
     }
 
-    loadNearbyFavorites();
+    loadRouteList();
 
     return () => {
       cancelled = true;
@@ -82,16 +81,16 @@ export default function SideQuestModal({
   }
 
   async function buildRoute() {
-    if (!selectedStops.length) return;
+    if (!selectedAnchors.length) return;
 
     setStep('routing');
     setErrorMsg('');
 
     try {
-      const result = await getRouteWithWaypoints(origin, destination, selectedStops);
+      const result = await getRouteWithWaypoints(origin, destination, selectedAnchors);
       directionsRenderer.setDirections(result);
       const summary = summarizeRoute(result);
-      setRouteInfo({ ...summary, stops: selectedStops.length });
+      setRouteInfo({ ...summary, anchors: selectedAnchors.length });
       setStep('done');
       onRouteReady();
     } catch (error) {
@@ -130,13 +129,13 @@ export default function SideQuestModal({
           ))}
         </div>
 
-        {step === 'loading' && <LoadingState label={`Checking ${activeList?.name || 'your list'} against the route`} />}
-        {step === 'routing' && <LoadingState label="Drawing your curated route" />}
+        {step === 'loading' && <LoadingState label={`Loading ${activeList?.name || 'your route list'}`} />}
+        {step === 'routing' && <LoadingState label="Drawing one curated route" />}
 
         {step === 'empty' && (
           <div className="empty-state compact">
-            <h3>No places from this list are nearby</h3>
-            <p>SideQuest checked this route against {activeList?.name || 'the selected list'}.</p>
+            <h3>This route list is empty</h3>
+            <p>Add places like Marina Green as route anchors, not stops.</p>
           </div>
         )}
 
@@ -159,7 +158,7 @@ export default function SideQuestModal({
             )}
 
             <ul className="sidequest-list">
-              {nearbyFavs.map((favorite) => {
+              {routeAnchors.map((favorite) => {
                 const category = CATEGORIES[favorite.category] || CATEGORIES.other;
                 const active = selected.has(favorite.id);
 
@@ -189,7 +188,7 @@ export default function SideQuestModal({
             <button
               type="button"
               className="primary-action"
-              disabled={!selectedStops.length}
+              disabled={!selectedAnchors.length}
               onClick={buildRoute}
             >
               Draw Route From {activeList?.name || 'List'}
@@ -213,19 +212,10 @@ export default function SideQuestModal({
                 <small>Distance</small>
               </span>
               <span>
-                <strong>{routeInfo.stops}</strong>
-                <small>Places</small>
+                <strong>{routeInfo.anchors}</strong>
+                <small>Via points</small>
               </span>
             </div>
-            <a
-              className="secondary-action"
-              href={buildGoogleMapsUrl(origin, destination, selectedStops)}
-              target="_blank"
-              rel="noreferrer"
-            >
-              <ExternalLink size={18} aria-hidden="true" />
-              Open in Google Maps
-            </a>
           </div>
         )}
       </section>
